@@ -175,6 +175,9 @@ public class TeleOpPID extends OpMode {
 
         telemetry.addData("pos arm", armPos);
         telemetry.addData("lift pos", liftPos);
+        telemetry.addData("h1 pos", hang1Pos);
+        telemetry.addData("h2 pos", hang2Pos);
+
         telemetry.update();
     }
 }
