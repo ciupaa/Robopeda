@@ -24,12 +24,19 @@ public class TeleOpPID extends OpMode {
     ≈3.434pulses/mm  MISUMI SLIDES
 
  */
-
-
-
+    private DcMotorEx  motor_stanga         = null; //the arm motor
+    private DcMotorEx  motor_glisiere        = null; //
+    private DcMotorEx fata_stanga = null;
+    private DcMotorEx fata_dreapta = null;
+    private DcMotorEx spate_dreapta = null ;
+    private DcMotorEx spate_stanga = null;
+    private  DcMotorEx hang1 = null;
+    private DcMotorEx hang2 = null;
+    private Servo cleste = null;
+    private Servo servoRotire = null;
     private PIDController controller;
-    public static double p = 0, i = 0, d = 0;
-    public  static  double f = 0;
+    public static double p = 0.02, i = 0, d = 0;
+    public  static  double f = 0.2;
 
     public static int target = 0 ;
 
@@ -37,8 +44,8 @@ public class TeleOpPID extends OpMode {
 
 
     private PIDController liftcontroller;
-    public static double lp = 0, li = 0 , ld = 0;
-    public static double lf = 0;
+    public static double lp = 0.08, li = 0 , ld = 0.00055;
+    public static double lf = 0.15;
     public static int ltarget = 0;
     private final double ticks_in_mm = 3.20;
 
@@ -58,16 +65,51 @@ public class TeleOpPID extends OpMode {
 
     private  final double h2ticks_in_degree = 3.434;
 
-    private DcMotorEx  motor_stanga         = null; //the arm motor
-    private DcMotorEx  motor_glisiere        = null; //
-    private DcMotorEx fata_stanga = null;
-    private DcMotorEx fata_dreapta = null;
-    private DcMotorEx spate_dreapta = null ;
-    private DcMotorEx spate_stanga = null;
-    private  DcMotorEx hang1 = null;
-    private DcMotorEx hang2 = null;
-    private Servo cleste = null;
-    private Servo servoRotire = null;
+
+
+    final double ARM_COLLAPSED_INTO_ROBOT  = 0;
+    final double cosSusBrat = 105 * ticks_in_degree;
+    final double cosJosBrat = 90 * ticks_in_degree;
+    final double hang = 140 * ticks_in_degree;
+    final double intake = 25 * ticks_in_degree;
+    final double servoRetras = 0.4;
+    final double servoTras = 0.7;
+
+    /* Variables to store the positions that the cleste should be set to when folding in, or folding out. */
+    final double cleste_inchis   = 0;
+    final double cleste_deschis  = 1;
+
+
+    /* A number in degrees that the triggers can adjust the arm position by */
+
+
+    /* Variables that are used to set the arm to a specific position */
+    final double FUDGE_FACTOR = 15 * ticks_in_degree;
+
+    //double armPose = (int)ARM_COLLAPSED_INTO_ROBOT;
+
+    double armPositionFudgeFactor;
+
+
+
+    final double LIFT_COLLAPSED = 0 * ticks_in_mm;
+    final double LIFT_SCORING_IN_LOW_BASKET = 100 * ticks_in_mm;
+    final double LIFT_SCORING_IN_HIGH_BASKET = 430 * ticks_in_mm;
+    final double LIFT_LIMIT = 400 * ticks_in_mm;
+    double liftPosition = LIFT_COLLAPSED;
+    final double han1_collapsed = 0 * h1ticks_in_degree;
+    final double han2_collapsed = 0 * h2ticks_in_degree;
+
+
+    final double LIFT_MAX_POSITION = (int) (450 * ticks_in_mm); // Fully extended for 240mm slide
+
+
+
+    double cycletime = 0;
+    double looptime = 0;
+    double oldtime = 0;
+
+
     @Override
     public void init() {
 
@@ -100,13 +142,10 @@ public class TeleOpPID extends OpMode {
         spate_dreapta.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         spate_stanga.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-
+        motor_stanga.setDirection(DcMotorSimple.Direction.REVERSE);
         motor_glisiere.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        motor_glisiere.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motor_stanga.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        hang1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        hang2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        fata_stanga.setDirection(DcMotorSimple.Direction.REVERSE);
+        spate_stanga.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // input motors exactly as shown below
 
@@ -129,6 +168,11 @@ public class TeleOpPID extends OpMode {
         int liftPos = motor_glisiere.getCurrentPosition();
         int hang1Pos = hang1.getCurrentPosition();
         int hang2Pos = hang2.getCurrentPosition();
+
+        armPos = (int) ARM_COLLAPSED_INTO_ROBOT;
+        liftPos = (int) LIFT_COLLAPSED;
+        hang1Pos = (int) han1_collapsed;
+        hang2Pos = (int) han2_collapsed;
 
         hang1pid.setPID(h1p, h1i, h1d);
         hang2pid.setPID(h2p, h2i, h2d);
@@ -173,10 +217,19 @@ public class TeleOpPID extends OpMode {
         hang2.setPower(h2power);
 
 
+        looptime = getRuntime();
+        cycletime = looptime-oldtime;
+        oldtime = looptime;
+
         telemetry.addData("pos arm", armPos);
         telemetry.addData("lift pos", liftPos);
         telemetry.addData("h1 pos", hang1Pos);
         telemetry.addData("h2 pos", hang2Pos);
+        telemetry.addData("target", target);
+        telemetry.addData("ltarget", ltarget);
+        telemetry.addData("h1target", h1target);
+        telemetry.addData("h2target", h2target);
+
 
         telemetry.update();
     }
