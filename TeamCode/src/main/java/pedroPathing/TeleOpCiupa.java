@@ -176,9 +176,9 @@ public class TeleOpCiupa extends LinearOpMode {
             /////
 
             double ff = Math.cos(Math.toRadians(target / ticks_in_degree)) * f;
-            double h1ff = Math.cos(Math.toRadians(h1target / h1ticks_in_degree)) * h1f;
-            double h2ff = Math.cos(Math.toRadians(h2target / h2ticks_in_degree)) * h2f;
-            double lff = Math.cos(Math.toRadians(ltarget / ticks_in_mm)) * lf;
+            double h1ff = h1f;
+            double h2ff = h2f;
+            double lff = lf;
 
             /////
 
@@ -249,6 +249,13 @@ public class TeleOpCiupa extends LinearOpMode {
             else if (gamepad2.left_bumper) {
                 ltarget = ltarget - 20 * ticks_in_mm;
             }
+
+            /////
+
+            motor_stanga.setPower(power);
+            hang1.setPower(h1power);
+            hang2.setPower(h2power);
+            motor_glisiere.setPower(lpower);
 
             /////
 
