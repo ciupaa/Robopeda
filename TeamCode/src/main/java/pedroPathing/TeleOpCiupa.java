@@ -43,15 +43,15 @@ public class TeleOpCiupa extends LinearOpMode {
     private PIDController controller;
     public static double p = 0.02, i = 0, d = 0;
     public  static  double f = 0.2;
-    public static double target = 0 ;
+    public static int target = 0 ;
     private  final double ticks_in_degree = 2.77;
 
     ////////
 
     private PIDController lcontroller;
-    public static double lp = 0.08, li = 0, ld = 0.00055;
+    public static double lp = 0.08, li = 0, ld = 0; /// ld = 0.00055
     public  static  double lf = 0.15;
-    public static double ltarget = 0 ;
+    public static int ltarget = 0 ;
     private  final double ticks_in_mm = 3.20;
 
     //////
@@ -59,7 +59,7 @@ public class TeleOpCiupa extends LinearOpMode {
     private PIDController hang1pid;
     public static double h1p = 0, h1i = 0, h1d = 0;
     public  static  double h1f = 0;
-    public static double h1target = 0 ;
+    public static int h1target = 0 ;
     private  final double h1ticks_in_degree = 3.434;
 
     //////
@@ -67,7 +67,7 @@ public class TeleOpCiupa extends LinearOpMode {
     private PIDController hang2pid;
     public static double h2p = 0, h2i = 0, h2d = 0;
     public  static  double h2f = 0;
-    public static double h2target = 0 ;
+    public static int h2target = 0 ;
     private  final double h2ticks_in_degree = 3.434;
     //////
 
@@ -114,8 +114,8 @@ public class TeleOpCiupa extends LinearOpMode {
         hang1 = hardwareMap.get(DcMotorEx.class, "hang1");
         hang2 = hardwareMap.get(DcMotorEx.class, "hang2");
 
-        cleste = hardwareMap.get(ServoEx.class, "cleste");
-        servoRotire = hardwareMap.get(ServoEx.class, "servoRotire");
+      //  cleste = hardwareMap.get(ServoEx.class, "cleste");
+     //   servoRotire = hardwareMap.get(ServoEx.class, "servoRotire");
 
         /////
 
@@ -226,28 +226,28 @@ public class TeleOpCiupa extends LinearOpMode {
 
 
             if(gamepad2.dpad_up){
-                target = 105 * ticks_in_degree;
+                target = (int) (105 * ticks_in_degree);
                 if(toolOp.isDown(GamepadKeys.Button.DPAD_UP)){
-                    ltarget = 100 * ticks_in_mm;
+                    ltarget = (int) (100 * ticks_in_mm);
                 }
             }
             if(gamepad2.dpad_down){
-                target = 90 * ticks_in_degree;
+                target = (int) (90 * ticks_in_degree);
             }
             if(gamepad2.dpad_right) {
                 target = 0;
                 ltarget = 0;
             }
             if(gamepad2.dpad_left) {
-                target = 25 * ticks_in_degree;
+                target = (int) (25 * ticks_in_degree);
                 ltarget = 0;
             }
 
             if(gamepad2.right_bumper) {
-                ltarget = ltarget + 20 * ticks_in_mm;
+                ltarget = (int) (ltarget + 20 * ticks_in_mm);
             }
             else if (gamepad2.left_bumper) {
-                ltarget = ltarget - 20 * ticks_in_mm;
+                ltarget = (int) (ltarget - 20 * ticks_in_mm);
             }
 
             /////

@@ -4,6 +4,8 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.PIDController;
+import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -20,10 +22,10 @@ import java.util.List;
 public class PID extends OpMode {
 
     private PIDController controller;
-    public static double p = 0.02, i = 0, d = 0;
-    public  static  double f = 0.2;
+    public static double p = 0.026, i = 0, d = 0;
+    public  static  double f = 0.25;
 
-    public static int target = 0 ;
+    public static double target = 10 ;
 
     private  final double ticks_in_degree = 2.77;
 
@@ -34,7 +36,7 @@ public class PID extends OpMode {
     public static double h1p = 0, h1i = 0, h1d = 0;
     public  static  double h1f = 0;
 
-    public static int h1target = 0 ;
+    public static double h1target = 0 ;
 
     private  final double h1ticks_in_degree = 3.434;
 
@@ -47,10 +49,10 @@ public class PID extends OpMode {
     private  final double h2ticks_in_degree = 3.434;
 
     private PIDController lcontroller;
-    public static double lp = 0.08, li = 0, ld = 0.00055;
-    public  static  double lf = 0.15;
+    public static double lp = 0.015, li = 0, ld = 0;
+    public  static  double lf = 0.1;
 
-    public static int ltarget = 0 ;
+    public static double ltarget = 100 ;
 
     private  final double ticks_in_mm = 3.20;
 
@@ -72,6 +74,8 @@ public class PID extends OpMode {
 
     @Override
     public void init() {
+
+
 
         controller = new PIDController(p, i, d);
         hang1pid = new PIDController(h1p, h1i, h1d);
@@ -100,6 +104,7 @@ public class PID extends OpMode {
 
         fata_stanga.setDirection(DcMotorSimple.Direction.REVERSE);
         spate_stanga.setDirection(DcMotorSimple.Direction.REVERSE);
+        hang2.setDirection(DcMotorSimple.Direction.REVERSE);
 
         List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
 
@@ -110,6 +115,8 @@ public class PID extends OpMode {
 
     @Override
     public void loop() {
+        GamepadEx driverOp = new GamepadEx(gamepad1);
+        GamepadEx toolOp = new GamepadEx(gamepad2);
         controller.setPID(p,i,d);
         hang1pid.setPID(h1p, h1i, h1d);
         hang2pid.setPID(h2p, h2i, h2d);
@@ -158,6 +165,25 @@ public class PID extends OpMode {
         hang1.setPower(h1power);
         hang2.setPower(h2power);
         motor_glisiere.setPower(lpower);
+
+        if(gamepad2.dpad_left){
+            target = 200;
+            ltarget = 100;
+        }
+        if(gamepad2.dpad_right){
+            target = 10;
+            ltarget = 100;
+        }
+        if(gamepad2.dpad_up){
+            target = 1200;
+                ltarget = 1600 * cycletime;
+        }
+        if(gamepad2.dpad_down){
+            target = 1200;
+                ltarget = 100 * cycletime;
+        }
+
+
 
 
         looptime = getRuntime();
