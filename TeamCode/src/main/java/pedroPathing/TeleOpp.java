@@ -17,7 +17,6 @@ import java.util.List;
 //@Disabled
 public class TeleOpp extends LinearOpMode {
 
-    /* Declare OpMode members. */
     public DcMotor  fata_stanga   = null; //the left drivetrain motor
     public DcMotor  fata_dreapta  = null; //the right drivetrain motor
     public DcMotor  spate_stanga    = null;
@@ -33,7 +32,7 @@ public class TeleOpp extends LinearOpMode {
     final double ARM_TICKS_PER_DEGREE =
             28 // number of encoder ticks per rotation of the bare motor
                     * 71.2 // This is the exact gear ratio of the gobilda 60rpm motor
-                    * 2.0 // This is the external gear reduction
+                    * 9.6 // This is the external gear reduction
                     * 1/360.0; // we want ticks per degree, not per rotation
 
 
