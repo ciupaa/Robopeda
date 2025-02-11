@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.arcrobotics.ftclib.gamepad.ToggleButtonReader;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -13,6 +14,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.opencv.core.Mat;
 
@@ -22,10 +25,10 @@ import java.util.List;
 public class PID extends OpMode {
 
     private PIDController controller;
-    public static double p = 0.026, i = 0, d = 0;
-    public  static  double f = 0.25;
+    public static double p = 0.0055, i = 0, d = 0.0002;
+    public  static  double f = 0.0011;
 
-    public static double target = 10 ;
+    public static double target = 0 ;
 
     private  final double ticks_in_degree = 2.77;
 
@@ -49,19 +52,22 @@ public class PID extends OpMode {
     private  final double h2ticks_in_degree = 3.434;
 
     private PIDController lcontroller;
-    public static double lp = 0.015, li = 0, ld = 0;
-    public  static  double lf = 0.1;
+    public static double lp = 0, li = 0, ld = 0;
+    public  static  double lf = 0;
 
-    public static double ltarget = 100 ;
+    public static double ltarget = 0 ;
 
     private  final double ticks_in_mm = 3.20;
 
-    private DcMotorEx  motor_glisiere ; //the arm motor
+    private DcMotorEx  motor_glisiere ;
 
     private DcMotorEx fata_stanga;
     private DcMotorEx fata_dreapta;
     private DcMotorEx spate_dreapta;
     private DcMotorEx spate_stanga;
+
+    private Servo servoRotire;
+    private Servo cleste;
 
 
     private DcMotorEx hang1 = null;
@@ -74,7 +80,6 @@ public class PID extends OpMode {
 
     @Override
     public void init() {
-
 
 
         controller = new PIDController(p, i, d);
@@ -94,7 +99,10 @@ public class PID extends OpMode {
         spate_dreapta = hardwareMap.get(DcMotorEx.class, "spate_dreapta");
         spate_stanga = hardwareMap.get(DcMotorEx.class, "spate_stanga");
 
-        motor_stanga.setDirection(DcMotorSimple.Direction.REVERSE);
+        cleste = hardwareMap.get(Servo.class, "cleste");
+        servoRotire = hardwareMap.get(Servo.class, "servoRotire");
+
+        motor_stanga.setDirection(DcMotorSimple.Direction.FORWARD);
         motor_glisiere.setDirection(DcMotorSimple.Direction.REVERSE);
 
         fata_dreapta.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);;
@@ -117,6 +125,9 @@ public class PID extends OpMode {
     public void loop() {
         GamepadEx driverOp = new GamepadEx(gamepad1);
         GamepadEx toolOp = new GamepadEx(gamepad2);
+        ToggleButtonReader dpadUpToggle = new ToggleButtonReader(
+                toolOp, GamepadKeys.Button.DPAD_UP
+        );
         controller.setPID(p,i,d);
         hang1pid.setPID(h1p, h1i, h1d);
         hang2pid.setPID(h2p, h2i, h2d);
@@ -127,19 +138,23 @@ public class PID extends OpMode {
         int hang2Pos = hang2.getCurrentPosition();
 
         double pid = controller.calculate(armPos, target);
-        double h1pid = hang1pid.calculate(hang1Pos, h1target);
-        double h2pid = hang2pid.calculate(hang2Pos, h2target);
         double lpid = lcontroller.calculate(liftPos, ltarget);
 
         double ff = Math.cos(Math.toRadians(target / ticks_in_degree)) * f;
-        double h1ff = Math.cos(Math.toRadians(h1target / h1ticks_in_degree)) * h1f;
-        double h2ff = Math.cos(Math.toRadians(h2target / h2ticks_in_degree)) * h2f;
-        double lff = Math.cos(Math.toRadians(ltarget / ticks_in_mm)) * lf;
+        double lff = lf;
+
+
 
         double power = pid + ff;
-        double h1power = h1pid + h1ff;
-        double h2power = h2pid + h2ff;
         double lpower = lpid + lff;
+
+        // --- Syncing hang1 and hang2 using hang1 as the leader ---
+        double leaderPID = hang1pid.calculate(hang1Pos, h1target);
+        double leaderFF  = h1f; // using the constant feedforward value for hang1
+        double leaderPower = leaderPID + leaderFF;
+
+
+
 
         double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
         double x = gamepad1.left_stick_x ; // Counteract imperfect strafing
@@ -160,11 +175,10 @@ public class PID extends OpMode {
         spate_dreapta.setPower(backRightPower);
 
 
-
         motor_stanga.setPower(power);
-        hang1.setPower(h1power);
-        hang2.setPower(h2power);
         motor_glisiere.setPower(lpower);
+        hang1.setPower(leaderPower);
+        hang2.setPower(leaderPower);
 
         if(gamepad2.dpad_left){
             target = 200;
@@ -176,16 +190,40 @@ public class PID extends OpMode {
         }
         if(gamepad2.dpad_up){
             target = 1200;
-                ltarget = 1600 * cycletime;
+            if(dpadUpToggle.getState()) {
+                ltarget = 1600;
+            }
+            //ltarget = 1600;
         }
         if(gamepad2.dpad_down){
             target = 1200;
-                ltarget = 100 * cycletime;
+            ltarget = 100;
         }
 
+/*
+        if (gamepad1.dpad_up){
+            h1target = 3987;
+            h2target = 3987;
+        }
+        if (gamepad1.dpad_down) {
+            h1target = 0;
+            h2target = 0;
+        }
+*/
 
-
-
+        if(gamepad2.b){
+            servoRotire.setPosition(0.4);
+        }
+        if(gamepad2.y) {
+            servoRotire.setPosition(0.7);
+        }
+        if(gamepad2.a){
+            cleste.setPosition(1);
+        }
+        if(gamepad2.x){
+            cleste.setPosition(0);
+        }
+        
         looptime = getRuntime();
         cycletime = looptime-oldtime;
         oldtime = looptime;
