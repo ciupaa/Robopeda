@@ -59,6 +59,10 @@ public class PID extends OpMode {
 
     private  final double ticks_in_mm = 3.20;
 
+    final double FUDGE_FACTOR = 1500;
+
+    double armPositionFudgeFactor;
+
     private DcMotorEx  motor_glisiere ;
 
     private DcMotorEx fata_stanga;
@@ -152,7 +156,8 @@ public class PID extends OpMode {
         double leaderPID = hang1pid.calculate(hang1Pos, h1target);
         double leaderFF  = h1f; // using the constant feedforward value for hang1
         double leaderPower = leaderPID + leaderFF;
-
+        hang1.setPower(leaderPower);
+        hang2.setPower(leaderPower);
 
 
 
@@ -177,8 +182,18 @@ public class PID extends OpMode {
 
         motor_stanga.setPower(power);
         motor_glisiere.setPower(lpower);
-        hang1.setPower(leaderPower);
-        hang2.setPower(leaderPower);
+
+
+
+        armPositionFudgeFactor = FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
+
+        if(gamepad2.right_bumper){
+            ltarget += 100;
+        }
+        if(gamepad2.left_bumper){
+            ltarget -= 100;
+        }
+
 
         if(gamepad2.dpad_left){
             target = 200;
@@ -200,7 +215,7 @@ public class PID extends OpMode {
             ltarget = 100;
         }
 
-/*
+
         if (gamepad1.dpad_up){
             h1target = 3987;
             h2target = 3987;
@@ -209,7 +224,11 @@ public class PID extends OpMode {
             h1target = 0;
             h2target = 0;
         }
-*/
+        if(gamepad1.dpad_right){
+            target = 100; // target poz hang
+        }
+
+
 
         if(gamepad2.b){
             servoRotire.setPosition(0.4);
