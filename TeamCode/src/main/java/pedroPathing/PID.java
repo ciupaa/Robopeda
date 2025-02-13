@@ -78,6 +78,36 @@ public class PID extends OpMode {
     private DcMotorEx hang2 = null;
 
 
+    double armClosed = 10;
+    double armMax = 1000;
+
+
+    double armCosSus = 1000;
+    double armCosJos = 1000;
+    double armIntake = 1000;
+    double armHangPos1 = 1000;
+    double armHangPos2 = 1000;
+
+    double armHang3Closed = 10;
+    double armHang3Open = 100;
+
+
+
+    double liftClosed = 100;
+    double liftMax = 1000;
+    double liftCosSus = 1000;
+    double liftCosJos = 1000;
+
+
+
+
+    double clesteDeschis = 1;
+    double clesteInchis = 0;
+    double servoTras = 0.7;
+    double servoRetras = 0.4;
+
+
+
     double cycletime = 0;
     double looptime = 0;
     double oldtime = 0;
@@ -196,53 +226,63 @@ public class PID extends OpMode {
 
 
         if(gamepad2.dpad_left){
-            target = 200;
-            ltarget = 100;
+            target = armIntake;
+            ltarget = liftClosed;
         }
         if(gamepad2.dpad_right){
-            target = 10;
-            ltarget = 100;
+            target = armClosed;
+            ltarget = liftClosed;
         }
         if(gamepad2.dpad_up){
-            target = 1200;
-            if(dpadUpToggle.getState()) {
-                ltarget = 1600;
-            }
-            //ltarget = 1600;
+            target = armCosSus;
+            ltarget = liftCosSus;
         }
         if(gamepad2.dpad_down){
-            target = 1200;
-            ltarget = 100;
+            target = armCosJos;
+            ltarget = liftClosed;
         }
 
 
         if (gamepad1.dpad_up){
-            h1target = 3987;
-            h2target = 3987;
+            h1target = armHang3Open;
+            h2target = armHang3Open;
         }
         if (gamepad1.dpad_down) {
-            h1target = 0;
-            h2target = 0;
+            h1target = armHang3Closed;
+            h2target = armHang3Closed;;
+
+            if(gamepad1.dpad_right){
+                target = armHangPos1;
+            } else if (gamepad1.dpad_right) {
+                target = armHangPos2;
+
+            }
         }
+
         if(gamepad1.dpad_right){
-            target = 100; // target poz hang
+                target = armHangPos1;
+            } else if (gamepad1.dpad_right) {
+                target = armHangPos2;
         }
 
 
 
         if(gamepad2.b){
-            servoRotire.setPosition(0.4);
+            servoRotire.setPosition(servoRetras);
         }
         if(gamepad2.y) {
-            servoRotire.setPosition(0.7);
+            servoRotire.setPosition(servoTras);
         }
+
+
         if(gamepad2.a){
-            cleste.setPosition(1);
+            cleste.setPosition(clesteInchis);
+        } else if (gamepad2.a) {
+            cleste.setPosition(clesteDeschis);
+
         }
-        if(gamepad2.x){
-            cleste.setPosition(0);
-        }
-        
+
+
         looptime = getRuntime();
         cycletime = looptime-oldtime;
         oldtime = looptime;
