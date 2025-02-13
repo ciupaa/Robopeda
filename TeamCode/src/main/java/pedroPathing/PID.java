@@ -52,8 +52,8 @@ public class PID extends OpMode {
     private  final double h2ticks_in_degree = 3.434;
 
     private PIDController lcontroller;
-    public static double lp = 0, li = 0, ld = 0;
-    public  static  double lf = 0;
+    public static double lp = 0.01, li = 0, ld = 0.0008;
+    public  static  double lf = 0.14;
 
     public static double ltarget = 0 ;
 
@@ -79,24 +79,24 @@ public class PID extends OpMode {
 
 
     double armClosed = 10;
-    double armMax = 1000;
+     double armMax = 1000;
 
 
-    double armCosSus = 1000;
-    double armCosJos = 1000;
-    double armIntake = 1000;
-    double armHangPos1 = 1000;
-    double armHangPos2 = 1000;
+    double armCosSus = 5950;
+    double armCosJos = 5950;
+    double armIntake = 1400;
+    double armHangPos1 = 7140;
+    double armHangPos2 = 8701;
 
     double armHang3Closed = 10;
     double armHang3Open = 100;
 
 
 
-    double liftClosed = 100;
+    double liftClosed = 10;
     double liftMax = 1000;
-    double liftCosSus = 1000;
-    double liftCosJos = 1000;
+    double liftCosSus = 1600;
+    double liftCosJos = 500;
 
 
 
@@ -218,10 +218,10 @@ public class PID extends OpMode {
         armPositionFudgeFactor = FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
 
         if(gamepad2.right_bumper){
-            ltarget += 100;
+            ltarget += 10;
         }
         if(gamepad2.left_bumper){
-            ltarget -= 100;
+            ltarget -= 10;
         }
 
 
@@ -233,37 +233,42 @@ public class PID extends OpMode {
             target = armClosed;
             ltarget = liftClosed;
         }
+//        if(gamepad2.dpad_up){
+//            target = armCosSus;
+//            ltarget = liftCosSus;
+//        }
+
         if(gamepad2.dpad_up){
             target = armCosSus;
+        }
+        if(gamepad2.dpad_up && armPos > 4000){
             ltarget = liftCosSus;
         }
+
         if(gamepad2.dpad_down){
             target = armCosJos;
             ltarget = liftClosed;
         }
 
-
-        if (gamepad1.dpad_up){
-            h1target = armHang3Open;
-            h2target = armHang3Open;
-        }
-        if (gamepad1.dpad_down) {
-            h1target = armHang3Closed;
-            h2target = armHang3Closed;;
-
             if(gamepad1.dpad_right){
                 target = armHangPos1;
-            } else if (gamepad1.dpad_right) {
-                target = armHangPos2;
-
             }
+            if (gamepad1.dpad_left) {
+                target = armHangPos2;
+            }
+
+            // LIMITE
+        if(liftPos > liftCosSus) {
+            ltarget = ltarget - (liftCosSus-ltarget);
+        }
+        if(liftPos < 0) {
+            ltarget = 0;
         }
 
-        if(gamepad1.dpad_right){
-                target = armHangPos1;
-            } else if (gamepad1.dpad_right) {
-                target = armHangPos2;
+        if(armPos < 0){
+            target = 0;
         }
+
 
 
 
@@ -273,7 +278,6 @@ public class PID extends OpMode {
         if(gamepad2.y) {
             servoRotire.setPosition(servoTras);
         }
-
 
         if(gamepad2.a){
             cleste.setPosition(clesteInchis);
