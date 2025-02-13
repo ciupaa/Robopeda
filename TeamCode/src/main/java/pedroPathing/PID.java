@@ -1,5 +1,7 @@
 package pedroPathing;
 
+import static java.lang.Math.abs;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -26,44 +28,40 @@ public class PID extends OpMode {
 
     private PIDController controller;
     public static double p = 0.0055, i = 0, d = 0.0002;
-    public  static  double f = 0.0011;
+    public static double f = 0.0011;
 
     public static double target = 0 ;
 
-    private  final double ticks_in_degree = 2.77;
+    private final double ticks_in_degree = 2.77;
 
-    private DcMotorEx  motor_stanga ; //the arm motor
-
+    private DcMotorEx motor_stanga; //the arm motor
 
     private PIDController hang1pid;
     public static double h1p = 0, h1i = 0, h1d = 0;
-    public  static  double h1f = 0;
+    public static double h1f = 0;
 
     public static double h1target = 0 ;
 
-    private  final double h1ticks_in_degree = 3.434;
+    private final double h1ticks_in_degree = 3.434;
 
     private PIDController hang2pid;
     public static double h2p = 0, h2i = 0, h2d = 0;
-    public  static  double h2f = 0;
+    public static double h2f = 0;
 
     public static int h2target = 0 ;
 
-    private  final double h2ticks_in_degree = 3.434;
+    private final double h2ticks_in_degree = 3.434;
 
     private PIDController lcontroller;
-    public static double lp = 0.01, li = 0, ld = 0.0008;
-    public  static  double lf = 0.14;
+    public static double lp = 0.01, li = 0, ld = 0.0002;
+    public static double lf = 0.14;
 
     public static double ltarget = 0 ;
 
-    private  final double ticks_in_mm = 3.20;
+    private final double ticks_in_mm = 3.20;
 
-    final double FUDGE_FACTOR = 1500;
 
-    double armPositionFudgeFactor;
-
-    private DcMotorEx  motor_glisiere ;
+    private DcMotorEx motor_glisiere;
 
     private DcMotorEx fata_stanga;
     private DcMotorEx fata_dreapta;
@@ -79,7 +77,7 @@ public class PID extends OpMode {
 
 
     double armClosed = 10;
-     double armMax = 1000;
+    double armMax = 1000;
 
 
     double armCosSus = 5950;
@@ -100,21 +98,23 @@ public class PID extends OpMode {
 
 
 
-
     double clesteDeschis = 1;
-    double clesteInchis = 0;
+    double clesteInchis = 0.5;
     double servoTras = 0.7;
     double servoRetras = 0.4;
 
 
-
+    double TempTarget = 0;
     double cycletime = 0;
     double looptime = 0;
     double oldtime = 0;
 
+    // --- New variables for PID toggle (gamepad2 L3) ---
+    private boolean pidEnabled = true;
+    private boolean previousLeftStick = false;
+
     @Override
     public void init() {
-
 
         controller = new PIDController(p, i, d);
         hang1pid = new PIDController(h1p, h1i, h1d);
@@ -128,7 +128,7 @@ public class PID extends OpMode {
         hang2 = hardwareMap.get(DcMotorEx.class, "hang2");
         motor_glisiere = hardwareMap.get(DcMotorEx.class, "motor_glisiere");
 
-        fata_dreapta =hardwareMap.get(DcMotorEx.class, "fata_dreapta");
+        fata_dreapta = hardwareMap.get(DcMotorEx.class, "fata_dreapta");
         fata_stanga = hardwareMap.get(DcMotorEx.class, "fata_stanga");
         spate_dreapta = hardwareMap.get(DcMotorEx.class, "spate_dreapta");
         spate_stanga = hardwareMap.get(DcMotorEx.class, "spate_stanga");
@@ -139,7 +139,7 @@ public class PID extends OpMode {
         motor_stanga.setDirection(DcMotorSimple.Direction.FORWARD);
         motor_glisiere.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        fata_dreapta.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);;
+        fata_dreapta.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         fata_stanga.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         spate_dreapta.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         spate_stanga.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -157,12 +157,15 @@ public class PID extends OpMode {
 
     @Override
     public void loop() {
+        // --- Toggle PID mode for motor_stanga using gamepad2 L3 ---
+        if (gamepad2.dpad_left && !previousLeftStick) {
+            pidEnabled = !pidEnabled;
+        }
+        previousLeftStick = gamepad2.dpad_left;
+
         GamepadEx driverOp = new GamepadEx(gamepad1);
         GamepadEx toolOp = new GamepadEx(gamepad2);
-        ToggleButtonReader dpadUpToggle = new ToggleButtonReader(
-                toolOp, GamepadKeys.Button.DPAD_UP
-        );
-        controller.setPID(p,i,d);
+        controller.setPID(p, i, d);
         hang1pid.setPID(h1p, h1i, h1d);
         hang2pid.setPID(h2p, h2i, h2d);
         lcontroller.setPID(lp, li, ld);
@@ -177,8 +180,6 @@ public class PID extends OpMode {
         double ff = Math.cos(Math.toRadians(target / ticks_in_degree)) * f;
         double lff = lf;
 
-
-
         double power = pid + ff;
         double lpower = lpid + lff;
 
@@ -189,16 +190,14 @@ public class PID extends OpMode {
         hang1.setPower(leaderPower);
         hang2.setPower(leaderPower);
 
-
-
         double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
-        double x = gamepad1.left_stick_x ; // Counteract imperfect strafing
+        double x = gamepad1.left_stick_x; // Counteract imperfect strafing
         double rx = gamepad1.right_stick_x;
 
         // Denominator is the largest motor power (absolute value) or 1
         // This ensures all the powers maintain the same ratio,
         // but only if at least one is out of the range [-1, 1]
-        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+        double denominator = Math.max(abs(y) + abs(x) + abs(rx), 1);
         double frontLeftPower = (y + x + rx) / denominator;
         double backLeftPower = (y - x + rx) / denominator;
         double frontRightPower = (y - x - rx) / denominator;
@@ -209,88 +208,91 @@ public class PID extends OpMode {
         fata_dreapta.setPower(frontRightPower);
         spate_dreapta.setPower(backRightPower);
 
-
-        motor_stanga.setPower(power);
         motor_glisiere.setPower(lpower);
 
-
-
-        armPositionFudgeFactor = FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
-
-        if(gamepad2.right_bumper){
-            ltarget += 10;
+        if (gamepad2.right_bumper) {
+            ltarget += 20;
         }
-        if(gamepad2.left_bumper){
-            ltarget -= 10;
+        if (gamepad2.left_bumper) {
+            ltarget -= 20;
         }
 
-
-        if(gamepad2.dpad_left){
+        if (gamepad2.dpad_left) {
             target = armIntake;
             ltarget = liftClosed;
         }
-        if(gamepad2.dpad_right){
+        if (gamepad2.dpad_right) {
             target = armClosed;
             ltarget = liftClosed;
         }
-//        if(gamepad2.dpad_up){
-//            target = armCosSus;
-//            ltarget = liftCosSus;
-//        }
 
-        if(gamepad2.dpad_up){
+        //        if(gamepad2.dpad_up){
+        //            target = armCosSus;
+        //            ltarget = liftCosSus;
+        //        }
+
+        if (gamepad2.dpad_up) {
             target = armCosSus;
         }
-        if(gamepad2.dpad_up && armPos > 4000){
+        if (gamepad2.dpad_up && armPos > 4000) {
             ltarget = liftCosSus;
         }
 
-        if(gamepad2.dpad_down){
+        if (gamepad2.dpad_down) {
             target = armCosJos;
             ltarget = liftClosed;
         }
 
-            if(gamepad1.dpad_right){
-                target = armHangPos1;
-            }
-            if (gamepad1.dpad_left) {
-                target = armHangPos2;
-            }
-
-            // LIMITE
-        if(liftPos > liftCosSus) {
-            ltarget = ltarget - (liftCosSus-ltarget);
+        if (gamepad1.dpad_right) {
+            target = armHangPos1;
         }
-        if(liftPos < 0) {
-            ltarget = 0;
+        if (gamepad1.dpad_left) {
+            target = armHangPos2;
         }
 
-        if(armPos < 0){
+        // --- Use PID or manual control for motor_stanga based on pidEnabled ---
+        if(pidEnabled) {
+            motor_stanga.setPower(power);
+        } else {
+            motor_stanga.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            motor_stanga.setPower(gamepad2.right_trigger + (-gamepad2.left_trigger));
+        }
+
+        // LIMITE
+        if (liftPos > liftCosSus) {
+            ltarget = ltarget - abs(liftCosSus - ltarget);
+        }
+        if (liftPos < 20) {
+            ltarget = ltarget + abs(0 - ltarget);
+        }
+
+        if (armPos < 0) {
             target = 0;
         }
 
-
-
-
-        if(gamepad2.b){
+        if (gamepad2.b) {
             servoRotire.setPosition(servoRetras);
         }
-        if(gamepad2.y) {
+        if (gamepad2.y) {
             servoRotire.setPosition(servoTras);
         }
 
-        if(gamepad2.a){
-            cleste.setPosition(clesteInchis);
-        } else if (gamepad2.a) {
+        if (gamepad2.x) {
             cleste.setPosition(clesteDeschis);
-
+        }
+        if (gamepad2.a) {
+            cleste.setPosition(clesteInchis);
         }
 
+        if (gamepad1.a) {
+            target = armClosed;
+        }
 
         looptime = getRuntime();
-        cycletime = looptime-oldtime;
+        cycletime = looptime - oldtime;
         oldtime = looptime;
 
+        telemetry.addData("PID Enabled", pidEnabled);
         telemetry.addData("pos arm", armPos);
         telemetry.addData("lift pos", liftPos);
         telemetry.addData("h1 pos", hang1Pos);
