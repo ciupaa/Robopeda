@@ -4,10 +4,15 @@ repositories {
 
     maven { url = 'https://maven.brott.dev/' }
     maven { url= "https://maven.pedropathing.com/" }
+    maven { url = "https://maven.rowanmcalpin.com/" }
 
 }
 
 dependencies {
+    implementation 'com.rowanmcalpin.nextftc:core:0.5.6-beta'
+    implementation 'com.rowanmcalpin.nextftc:ftc:0.5.6-beta'
+    implementation 'com.rowanmcalpin.nextftc:pedro:0.5.6-beta' // Remove if you don't intend to use PedroPathing
+    implementation 'com.acmerobotics.dashboard:dashboard:0.4.16' // Remove if you don't intend to use the FTC Dashboard (required if using PedroPathing)
     implementation 'org.firstinspires.ftc:Inspection:10.1.1'
     implementation 'org.firstinspires.ftc:Blocks:10.1.1'
     implementation 'org.firstinspires.ftc:RobotCore:10.1.1'
@@ -20,6 +25,5 @@ dependencies {
 
     //noinspection GradleDependency
     implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'com.acmerobotics.dashboard:dashboard:0.4.4'
 }
 

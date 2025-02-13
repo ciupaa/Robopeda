@@ -99,7 +99,7 @@ public class PID extends OpMode {
 
 
     double clesteDeschis = 1;
-    double clesteInchis = 0.5;
+    double clesteInchis = 0.6;
     double servoTras = 0.7;
     double servoRetras = 0.4;
 
