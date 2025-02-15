@@ -20,7 +20,7 @@ import java.util.List;
 
 @Config
 @TeleOp
-public class TeleOpMeetXEO extends OpMode {
+public class SPECIMEN extends OpMode {
     private PIDController lift;
     public static double lp = 0.01, li = 0, ld = 0.0002;
     public static double lf = 0.14;
@@ -53,7 +53,7 @@ public class TeleOpMeetXEO extends OpMode {
 
 
     double clesteDeschis = 0.6;
-    double clesteInchis = 0.93;
+    double clesteInchis = 1;
     double servoTras = 0.6;
     double servoRetras = 0.4;
 
@@ -69,7 +69,9 @@ public class TeleOpMeetXEO extends OpMode {
     final double cosSusBrat = 115 * ARM_TICKS_PER_DEGREE;
     final double cosJosBrat = 90 * ARM_TICKS_PER_DEGREE;
     final double hang = 140 * ARM_TICKS_PER_DEGREE;
-    final double intake = 25 * ARM_TICKS_PER_DEGREE;
+    final double intake = 33 * ARM_TICKS_PER_DEGREE;
+    final double specimen = 90 * ARM_TICKS_PER_DEGREE;
+    final double outtake = 70 * ARM_TICKS_PER_DEGREE;
     final double FUDGE_FACTOR = 25 * ARM_TICKS_PER_DEGREE;
     double armPosition = (int)ARM_COLLAPSED_INTO_ROBOT;
     double armPositionFudgeFactor;
@@ -161,10 +163,10 @@ public class TeleOpMeetXEO extends OpMode {
             cleste.setPosition(clesteDeschis);
         }
         if(gamepad2.b){
-            servoRotire.setPosition(servoRetras);
+            servoRotire.setPosition(0.35);
         }
         if(gamepad2.y){
-            servoRotire.setPosition(servoTras);
+            servoRotire.setPosition(0.65);
         }
 
         if (gamepad2.right_bumper) {
@@ -179,7 +181,7 @@ public class TeleOpMeetXEO extends OpMode {
             ltarget = liftClosed;
         }
         if (gamepad2.dpad_right) {
-            armPosition = ARM_COLLAPSED_INTO_ROBOT;
+            armPosition = specimen;
             ltarget = liftClosed;
         }
 
@@ -191,7 +193,7 @@ public class TeleOpMeetXEO extends OpMode {
         }
 
         if (gamepad2.dpad_down) {
-            armPosition = cosJosBrat;
+            armPosition = outtake;
             ltarget = liftClosed;
         }
 
