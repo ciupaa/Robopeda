@@ -37,7 +37,7 @@ public class TeleOpp extends LinearOpMode {
 
 
     final double ARM_COLLAPSED_INTO_ROBOT  = 0;
-    final double cosSusBrat = 105 * ARM_TICKS_PER_DEGREE;
+    final double cosSusBrat = 115 * ARM_TICKS_PER_DEGREE;
     final double cosJosBrat = 90 * ARM_TICKS_PER_DEGREE;
     final double hang = 140 * ARM_TICKS_PER_DEGREE;
     final double intake = 25 * ARM_TICKS_PER_DEGREE;
@@ -53,7 +53,7 @@ public class TeleOpp extends LinearOpMode {
 
 
     /* Variables that are used to set the arm to a specific position */
-    final double FUDGE_FACTOR = 15 * ARM_TICKS_PER_DEGREE;
+    final double FUDGE_FACTOR = 25 * ARM_TICKS_PER_DEGREE;
     final double miscareHang = 0;
     double armPosition = (int)ARM_COLLAPSED_INTO_ROBOT;
 
@@ -67,11 +67,11 @@ public class TeleOpp extends LinearOpMode {
 
     final double LIFT_COLLAPSED = 0 * LIFT_TICKS_PER_MM;
     final double LIFT_SCORING_IN_LOW_BASKET = 100 * LIFT_TICKS_PER_MM;
-    final double LIFT_SCORING_IN_HIGH_BASKET = 430 * LIFT_TICKS_PER_MM;
-    final double LIFT_LIMIT = 400 * LIFT_TICKS_PER_MM;
+    final double LIFT_SCORING_IN_HIGH_BASKET = 470 * LIFT_TICKS_PER_MM;
+    final double LIFT_LIMIT = 470 * LIFT_TICKS_PER_MM;
     double liftPosition = LIFT_COLLAPSED;
 
-    final double LIFT_MAX_POSITION = (int) (450 * LIFT_TICKS_PER_MM); // Fully extended for 240mm slide
+    final double LIFT_MAX_POSITION = (int) (470 * LIFT_TICKS_PER_MM); // Fully extended for 240mm slide
 
 
 
@@ -123,7 +123,7 @@ public class TeleOpp extends LinearOpMode {
         /* Before starting the motor_stanga. We'll make sure the TargetPosition is set to 0.
         Then we'll set the RunMode to RUN_TO_POSITION. And we'll ask it to stop and reset encoder.
         If you do not have the encoder plugged into this motor, it will not run in this code. */
-        motor_stanga.setDirection(DcMotorSimple.Direction.REVERSE);
+        motor_stanga.setDirection(DcMotorSimple.Direction.FORWARD);
         motor_stanga.setTargetPosition(0);
         motor_stanga.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motor_stanga.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -187,15 +187,15 @@ public class TeleOpp extends LinearOpMode {
             to start collecting. So it moves the armPosition to the ARM_COLLECT position,
             it folds out the cleste to make sure it is in the correct orientation to servoRotire, and it
             turns the servoRotire on to the COLLECT mode.*/
-            if (gamepad2.a) {
-                cleste.setPosition(cleste_deschis);
+            if (gamepad2.x) {
+                cleste.setPosition(0.6);
             }
-            else if (gamepad2.x)
-                cleste.setPosition(cleste_inchis);
+            else if (gamepad2.a)
+                cleste.setPosition(1);
             if(gamepad2.b)
-                servoRotire.setPosition(servoRetras);
+                servoRotire.setPosition(0.4);
             else if (gamepad2.y)
-                servoRotire.setPosition(servoTras);
+                servoRotire.setPosition(0.6);
 
             armPositionFudgeFactor = FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
             // armPositionFudgeFactor = FUDGE_FACTOR * (gamepad1.right_trigger + (-gamepad1.left_trigger));
