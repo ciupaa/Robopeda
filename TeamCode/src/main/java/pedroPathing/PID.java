@@ -99,10 +99,10 @@ public class PID extends OpMode {
 
 
 
-    double clesteDeschis = 1;
-    double clesteInchis = 0.6;
-    double servoTras = 0.7;
-    double servoRetras = 0.4;
+    double clesteDeschis = 0.6;
+    double clesteInchis = 1;
+    double servoTras = 0.4;
+    double servoRetras = 0.6;
 
 
     double TempTarget = 0;
@@ -227,11 +227,6 @@ public class PID extends OpMode {
             ltarget = liftClosed;
         }
 
-        //        if(gamepad2.dpad_up){
-        //            target = armCosSus;
-        //            ltarget = liftCosSus;
-        //        }
-
         if (gamepad2.dpad_up) {
             target = armCosSus;
         }
@@ -260,6 +255,9 @@ public class PID extends OpMode {
         }
 
         // LIMITE
+
+
+
         if (liftPos > liftCosSus) {
             ltarget = ltarget - abs(liftCosSus - ltarget);
         }
@@ -271,11 +269,11 @@ public class PID extends OpMode {
             target = 0;
         }
 
-        if (gamepad2.b) {
-            servoRotire.setPosition(servoRetras);
-        }
         if (gamepad2.y) {
-            servoRotire.setPosition(servoTras);
+            servoRotire.setPosition(0.6);
+        }
+        if (gamepad2.b) {
+            servoRotire.setPosition(0.4);
         }
 
         if (gamepad2.x) {
