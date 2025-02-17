@@ -124,8 +124,6 @@ public class TeleOpMeetXEO extends OpMode {
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
-
-
     }
 
     @Override
